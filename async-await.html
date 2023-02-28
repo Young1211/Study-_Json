@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>async-await</title>
+  </head>
+  <body>
+    <script>
+      //1.async
+      //   function fetchUser() {
+      //     //do network request in 10 secs...
+      //     return new Promise((resolve, reject) => {
+      //       return resolve("elile");
+      //     });
+      //   }
+
+      async function fetchUser() {
+        //do network request in 10 secs...
+        return "ellie";
+      }
+      //바로 promise를 return
+
+      const user = fetchUser();
+      console.log(user);
+      //자바스크립트는 동기적인 처리
+      //한 줄이 끝나야 다음 줄 처리함
+      //이런 일들은 비동기적으로 처리
+      //then이라는 콜백함수만 준비해놓으면, 데이터를 가져오겠다
+
+      //2. await
+      //async가 붙은 함수 내에서만 사용 가능
+      function delay(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+      async function getApple() {
+        //기다려줄게
+        await delay(1000);
+        // throw "error";
+        return "🍞";
+      }
+      async function getBanana() {
+        await delay(1000);
+        return "🍤";
+        //3초 지나서 음식 리턴
+        //delay가 끝날 때까지 기다렸다가 banana를 리턴함
+      }
+      //   function pickFruits() {
+      //     return getApple().then((apple) => {
+      //       return getBanana().then((banana) => `${apple} + ${banana}`);
+      //     });
+      //   }
+      //   pickFruits().then(console.log);
+
+      //async + await 같이 이용
+      //   async function pickFruits() {
+      //     try {
+      //       const apple = await getApple();
+      //       const banana = await getBanana();
+      //       return `${apple} + ${banana}`;
+      //     } catch (error) {
+      //       console.error(error);
+      //     }
+      //   }
+      //   pickFruits().then(console.log);
+
+      //promise도 중첩적으로 체이닝을 하게 되면,
+      //콜백 지옥과 같은 문제점 방지
+
+      //await의 병렬 처리?
+      //promise를 바로 호출하면, 즉시 실행함
+      async function pickFruits() {
+        const applePromise = getApple();
+        const bananaPromise = getBanana();
+        const apple = await applePromise;
+        const banana = await bananaPromise;
+        return `${apple} + ${banana}`;
+      }
+      pickFruits().then(console.log);
+
+      //3. useful Promise APIs
+      function pickAllFruits() {
+        //모든 promise들이 병렬적으로 받을 때까지,모아주는 api!
+        //배열 형태
+        return Promise.all([getApple(), getBanana()]).then((fruits) =>
+          fruits.join(" + ")
+        );
+      }
+      pickAllFruits().then(console.log);
+
+      //가장 먼저 값을 리턴하는 아이 출력
+      function pickOnlyOne() {
+        return Promise.race([getApple(), getBanana()]);
+      }
+      pickOnlyOne().then(console.log);
+
+      //callback-to-promise 파일
+      //async - await로 바꿔보기
+
+      // function taskA(a, b, cb) {
+      //   setTimeout(() => {
+      //     const res = a + b;
+      //     cb(res);
+
+      //   }, 3000);
+      // }
+
+      //   taskA(5, 5, (res) => {
+      //     //res를 전달해줌
+      //     console.log(`A TASK RESULT : `, res);
+      //   });
+      //   function taskB(a, cb) {
+      //     setTimeout(() => {
+      //       const res = a * 2;
+      //       cb(res);
+      //     }, 1000);
+      //   }
+
+      //   function taskC(a, cb) {
+      //     setTimeout(() => {
+      //       const res = a * -1;
+      //       cb(res);
+      //     }, 2000);
+      //   }
+
+      // taskA(4, 5, (a_res) => {
+      //   console.log("A RESULT : ", a_res);
+      //   //a_res의 결과값을 가져옴
+      //   taskB(a_res, (b_res) => {
+      //     console.log("B RESULT : ", b_res);
+      //     taskC(b_res, (c_res) => {
+      //       console.log("C RESULT : ", c_res);
+      //     });
+      //   });
+      // });
+
+      //콜백 지옥을 Promise를 사용해서 해결하기
+      //a에서 받아온 값 -> b로 전달 -> b에서 받아온 값 -> c로 전달
+      //제일 먼저 호출할 것은 taskA
+
+      function taskA(a, b) {
+        return new Promise((resolve, reject) =>
+          setTimeout(() => {
+            const res = a + b;
+            resolve(res);
+          }, 3000)
+        );
+      }
+
+      function taskB(a) {
+        return new Promise((resolve, reject) =>
+          setTimeout(() => {
+            const res = a * 2;
+            resolve(res);
+          }, 1000)
+        );
+      }
+      function taskC(a) {
+        return new Promise((resolve, reject) =>
+          setTimeout(() => {
+            const res = a * -1;
+            resolve(res);
+          }, 2000)
+        );
+      }
+      taskA(4, 5)
+        .then((res_a) => taskB(res_a))
+        .then((res_b) => taskC(res_b))
+        .then((res_c) => console.log(res_c));
+
+      // taskA(4, 5)
+      //   .then((a_res) => taskB(a_res))
+      //   .then((b_res) => taskC(b_res))
+      //   .then((res) => console.log(res));
+
+      // taskA(4, 5)
+      //   .then((a_res) => {
+      //     console.log(a_res);
+      //     return taskB(a_res);
+      //     //반환함
+      //   })
+      //   .then((b_res) => {
+      //     console.log(b_res);
+      //     return taskC(b_res);
+      //   })
+      //   .then((c_res) => console.log(c_res));
+
+      // //콜백 헬 발생 -> 간단히 줄이는 방법
+      // taskA(4, 5).then((a_res) => {
+      //   console.log(a_res);
+      //   taskB(a_res).then((b_res) => {
+      //     console.log(b_res);
+      //     taskC(b_res).then((c_res) => {
+      //       console.log(c_res);
+      //     });
+      //   });
+      // });
+
+      //then을 많이 사용할수록, 반환 속도 느려짐??
+
+      //대충 이렇게 나오기는 하는데.........
+      // (9 x 2) x -1 = -18
+      //좀 더 간단하게 줄일 수는 없을까?
+
+      // taskA(4, 5, (a_res) => {
+      //   console.log("A RESULT : ", a_res);
+      //   taskB(a_res, (b_res) => {
+      //     console.log("B RESULT : ", b_res);
+      //     taskC(b_res, (c_res) => {
+      //       console.log("C RESULT : ", c_res);
+      //     });
+      //   });
+      // });
+
+      //Promise - 콜백지옥에서 탈출하기
+      //Promise를 사용함
+      //이거 굳이 콜백을 넣을 필요가 있음?
+
+      //2초 뒤에 우리가 넣은 값이 양수인지 음수인지 판단하는 프로그램 만들기
+      //넣은 값- 인자가 필요함
+      //비동기 작업
+
+      //number 타입이면,
+
+      function isPositive(number, resolve, reject) {
+        setTimeout(() => {
+          if (typeof number === "number") {
+            //성공 -> resolve
+            resolve(number >= 0 ? "양수" : "음수");
+          } else {
+            //실패 -> reject
+            reject("주어진 값이 숫자형 값이 아닙니다");
+          }
+        }, 2000);
+      }
+
+      // isPositive(
+      //   [],
+      //   (res) => {
+      //     console.log("성공적으로 수행됨 : ", res);
+      //   },
+      //   (err) => {
+      //     console.log("실패하였음  : ", err);
+      //   }
+      // );
+      //promise를 이용해서 비동기 처리를 다시 함
+
+      //number 파라미터를 잡음
+      // function isPositiveP(number) {
+      //   return new Promise((resolve, reject) => {
+      //     setTimeout(() => {
+      //       if (typeof number === "number") {
+      //         resolve(number >= 0 ? "양수" : "음수");
+      //       } else {
+      //         reject("주어진 값이 숫자형 값이 아닙니다");
+      //       }
+      //     }, 3000);
+      //   });
+      // }
+
+      // isPositiveP([])
+      //   .then((res) => console.log(res))
+      //   .catch((error) => {
+      //     console.log(error);
+      //   });
+
+      function isPositiveP(number) {
+        //executor 함수?
+        //실행자라는 뜻
+        //비동기 작업을 실질적으로 수행하는 함수
+        const executor = (resolve, reject) => {
+          setTimeout(() => {
+            if (typeof number === "number") {
+              //성공 -> resolve
+              console.log(number);
+              resolve(number >= 0 ? "양수" : "음수");
+            } else {
+              //실패 -> reject
+              reject("주어진 값이 숫자형 값이 아닙니다");
+            }
+          }, 2000);
+        };
+        //executor 함수를 실행시키는 법
+        //Promise를 저장할 변수를 만들어서 넘겨줌
+        const asyncTask = new Promise(executor);
+        return asyncTask;
+      }
+
+      const res = isPositiveP([]);
+      res
+        .then((res) => {
+          console.log("작업 성공 : ", res);
+        })
+        .catch((error) => {
+          console.log("작업 실패 : ", error);
+        });
+
+      //resolve -> then 함수로 받아옴
+      //reject -> catch 함수로 받아옴
+
+      //양수/음수를 받아오기 위해서는
+      //콜백함수가 필요함 -> return
+      //promsie 반환값 -> 비동기작업
+      //비동기 처리의 결과를 사용하는 법 -> then
+
+      //async & await - 직관적인 비동기처리 코드 작성하기
+      function dealy(ms) {
+        //promise를 반환함
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            resolve();
+          }, ms);
+        });
+      }
+
+      // async function helloAsync() {
+      //   //비동기로 동작할 것 같은 함수
+      //   return dealy(3000).then(() => {
+      //     return "hello Async";
+      //   });
+      // }
+      // //return 값이 promise이므로, then을 이용해서 값을 불러와야 함
+      // helloAsync().then((res) => {
+      //   console.log(res);
+      // });
+
+      //await을 이용해서 바꿔보기
+      //delay 시간까지 기다렸다가 반환함
+      //delay가 promise
+      // async function helloAsync() {
+      //   const result = await dealy(2000).then(() => {
+      //     return "hello Async";
+      //   });
+      //   console.log(result);
+      // }
+      // helloAsync();
+
+      async function helloAsync() {
+        await dealy(2000); //2초 기다렸다가,
+        return "hello Async"; //출력함
+      }
+      // helloAsync().then((res) => {
+      //   console.log(res);
+      // });
+
+      async function main() {
+        //helloAsync ->
+        const res = await helloAsync();
+        console.log(res);
+      }
+      main();
+
+      // console.log(hello()); //hello
+      // console.log(helloAsync()); // //Promise {<fulfilled>: 'hello Async'}
+      // //async 키워드를 붙이면 Promise를 반환함!
+      // // -> then을 사용 가능함
+      // helloAsync().then(console.log); //hello Async
+      // helloAsync().then((res) => {
+      //   console.log(res);
+      // });
+
+      //async 키워드를 앞에 붙여준 함수의 리턴값은
+      //promise의 resolve의 결과값이 됨
+      //resolve로 수행한 결과랑 똑같음!
+    </script>
+  </body>
+</html>
+
+<!-- 
+
+promise
+-then을 이용해서 체이닝이 가능하지만,
+계속 사용하다 보면 코드가 복잡해짐
+
+해결법
+-> async - await
+기존의 존재하는 promise 위에 간편한 api 제공
+=> syntactic sugar
+클래스 - 프로토타입 + 간편한 무언가가 덧붙여짐
+
+필요에 따라 사용함
+-프로젝트를 하면서 감을 찾는 게 좋음
+
+-resolve와 reject를 호출하지 않고
+리턴을 하게 되면, pending이 뜸!
+-reject나 resolve를 이용해야함
+
+
+fulfilled
+-promise를 리턴하기 때문에
+-then을 이용해 promise를 호출한다
+
+async-await로 간편하게 promise
+사용
+
+*async!!
+-> 바로 promsie로 만들어줌
+
+await
+-!!! 중괄호 + return!
+-error가 발생한다면(여기서는 throw로 에러를 발생시킴)
+try-catch로 에러 처리를 해줘야한다
+try {
+    //에러 처리가 발생할 수 있는 구문
+}
+catch(error) {
+    console.error(error);
+}
+
+*await의 병렬?
+사과 - 1초
+바나나 - 1초
+순차적으로 진행하게 되면, 비효율적임
+서로 연관되어 있지 않아서, 기다릴 필요가 없음
+개선?
+
+
+
+ -->

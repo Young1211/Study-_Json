@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>API 호출</title>
+  </head>
+  <body>
+    <script>
+      /*
+          fetch('http://example.com/movies.json')
+          .then((response) => response.json())
+            .then((data) => console.log(data));
+      */
+      //   let response = fetch("https://jsonplaceholder.typicode.com/posts")
+      //     .then((res) => res.json())
+      //     .then((data) => {
+      //       console.log(data);
+      //     });
+      //   console.log(response);
+      //respone는 promise를 반환함
+
+      //async - await 사용하기
+      //   async function getData() {
+      //     //promise를 반환하게 됨
+      //     let rawresponse = await fetch("https://jsonplaceholder.typicode.com/posts")
+      //       .then((res) => res.json())
+      //       .then((data) => {
+      //         console.log(data);
+      //       });
+      //     return response;
+      //   }
+      //   getData();
+
+      async function getData() {
+        //promise를 반환하게 됨
+        let rawresponse = await fetch(
+          "https://jsonplaceholder.typicode.com/posts"
+        );
+        let jsonResponse = await rawresponse.json();
+        console.log(jsonResponse);
+      }
+      getData();
+    </script>
+  </body>
+</html>
+
+<!-- 
+
+api & fetch
+-비동기 함수와 fetch를 이용해서
+서버 데이터 불러오기
+
+fetch
+-api 호출할 수 있도록 도와주는 내장 함수!
+-promise를 반환하는 함수 -> 비동기 반환
+-> then을 통해서 사용
+
+-api 성공 객체를 반환하기 때문에 response를 반환함
+-편지 봉투를 꺼낸 상태
+-response는 일종의 포장지다!
+
+
+async await + fetch
+
+api
+-응용 프로그램 프로그래밍 인터페이스
+-인터페이스 제공
+
+
+손님(클라이언트)
+-데이터 요청(Request)
+
+서버 
+-요청 데이터 전달(Response)
+
+
+Promise로 비동기 호출함 
+-> jsonPlaceHolder
+https://jsonplaceholder.typicode.com/posts
+
+
+
+
+
+ -->

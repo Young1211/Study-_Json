@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>callback</title>
+  </head>
+  <body>
+    <script>
+      //   console.log("1");
+      //   console.log("2");
+      //   console.log("3");
+      //1,2,3
+      //동기는 코드 순서대로! 순차적으로 실행됨
+      //   console.log("1");
+      //   setTimeout(() => {
+      //     console.log("2");
+      //     //하나의 파라미터로 전달해주는 함수
+      //     //1초가 지난 다음 함수를 실행
+      //     //다시 불러줘, callback 함수
+      //   }, 1000);
+      //   console.log("3");
+      //실행순서 1,2,3, hello
+
+      //Synchrouns callback
+      //동기 - 예측 가능함
+      //   function printImmediately(print) {
+      //     print();
+      //     //함수를 인자로 받아와 즉각적으로 실행하는 함수
+      //   }
+      //   const printImmediately = (print) => {
+      //     print();
+      //   };
+
+      //   printImmediately(() => {
+      //     console.log("콜백 함수");
+      //   });
+
+      //Asynchronous callback
+      //비동기 - 즉, 예측할 수 없음
+      //1-3-2-콜백함수
+      //setTimeout 함수가 가장 늦게 호출됨
+      //함수의 선언(function, 호이스팅됨)
+
+      //   function printWithDelary(print, timeout) {
+      //     setTimeout(print, timeout);
+      //   }
+      //   printWithDelary(() => {
+      //     console.log("async callback");
+      //   }, 2000);
+      //1 - > 3 -> 콜백함수 -> 2 -> async callback
+
+      //콜백 지옥 예제
+      class UserStorage {
+        loginUser(id, password, onSuccess, onError) {
+          setTimeout(() => {
+            if (
+              (id === "ellie" && password === "dream") ||
+              (id === "cooder" && password === "academy")
+            ) {
+              onSuccess(id);
+            } else {
+              //new Error로 에러를 새로 던져줌
+              onError(new Error("not found"));
+            }
+          }, 2000);
+        }
+        getRoles(user, onSuccess, onError) {
+          //사용자의 역할을 받아옴
+          setTimeout(() => {
+            if (user === "ellie") {
+              onSuccess({ name: "ellie", role: "admin" });
+            } else {
+              onError(new Error("no access"));
+            }
+          }, 1000);
+        }
+      }
+
+      //클래스를 만들었으니 사용해야함
+      const userStorage = new UserStorage();
+      //클래스를 이용해서 통신
+      const id = prompt("아이디를 입력하세요");
+      //prommpt로 id를 얻음
+      const password = prompt("비밀번호를 입력하세요");
+
+      //데이터를 받아오면
+      userStorage.loginUser(
+        id,
+        password,
+        (user) => {
+          userStorage.getRoles(
+            user,
+            (userWidthRole) => {
+              alert(
+                `Hello ${userWidthRole.name}, you have a ${userWidthRole.role} role`
+              );
+            },
+            (error) => {
+              console.log(error);
+            }
+          );
+        },
+        (error) => {
+          console.log(error);
+        }
+      );
+    </script>
+  </body>
+</html>
+
+<!-- 
+
+1. 동기와 비동기
+-면접에서도 나옴
+
+
+        //자바스크립트는 동기적이다!
+        //작성한 코드의 순서에 따라서 실행됨
+        //호이스팅 - var or function 선언이 제일 위로 선언됨
+        //호이스팅이 되고 나서 자동으로 실행이 된다
+
+
+비동기
+-언제 실행될 지 예측할 수 없는 함수
+-대표적인 예시 setTimeout() 함수
+- timeHandler 라는 콜백함수 인자와 시간을 정할 수 있는 인자가 있음
+
+자바스크립트 
+위에서 밑으로 실행함
+setTimeout는 브라우저 api 함수!
+요청을 해주는데, 요청을 받아올 때까지 
+기다리지 않고 아래에 있는 콘솔 로그 출력
+*응답을 기다리지 않고 바로 출력
+*브라우저에서 1초의 시간이 지난 다음 
+출력하게 됨
+
+-> 비동기적인 실행 방법
+
+
+
+모든 함수의 선언은 호이스팅됨
+-선언이 제일 일어남
+
+동기 - 비동기(브라우저) - 동기 - 동기 - 비동기(브라우저)
+1초의 시간이 지난다음에 2 실행
+2초의 시간이 지난다음에 async 실행
+
+
+-js는 콜백 형태로 함수를 인자로 전달할 수 있음
+언어마다 콜백을 지원하는 형식은 다름
+
+
+-콜백지옥 체험
+
+
+//1. 상대방에게 id와 비밀번호를 받아옴
+//2. 로그인을 함 
+//3. 로그인을 성공한다면 id를 전달
+//4. 사용자의 이름과 역할이 들어있는 object 출력
+
+
+콜백 체인의 문제점
+-콜백 안에서 다른 것을 호출하고, 전달
+->콜백 지옥
+1. 가독성이 많이 떨어짐
+한 눈에 흐름을 이해하기 힘듦
+
+로그인 함 - > 로그인한 데이터를 받아옴 
+2. 디버그가 힘듦!
+체인이 길어질 수록 유지보수가 어려움
+
+
+
+ -->

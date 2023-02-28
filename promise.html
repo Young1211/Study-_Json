@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>promise</title>
+  </head>
+  <body>
+    <script>
+      //프로미스는 자바스크립트 object 안에 내장되어 있는 함수
+      //비동기를 수행할 때 콜백함수 대신에 사용함
+      //State: pending -> fulfilled or rejected
+      //Producer vs Consumere
+
+      //1. Producer
+      const promise = new Promise((resolve, reject) => {
+        //조금 무거운 일들을 함
+        //파일에서 데이터를 읽어옴 -> 비동기적으로 처리할 것
+        //network, read files
+        //새로운 프로미스가 만들어질 때는 우리가 전달한
+        //executor라는 콜백 함수가 바로 실행됨!!
+        console.log("doing something...");
+        setTimeout(() => {
+          resolve("young");
+          //reject를 이용해 error 던지기
+          //reject(new Error("no network"));
+        }, 2000);
+      });
+
+      //2. promise 사용하기 -> Consumers(then, catch, finally)
+      promise
+        .then((value) => {
+          //value - resolve에서 전달된 값이 들어옴
+          console.log(value);
+        })
+        .catch((error) => {
+          console.log(error);
+        })
+        .finally(() => {
+          console.log("finally");
+        });
+
+      //3. promsie 연결하기 - chaining
+      //다른 비동기적인 애들을 묶어서 처리 가능함
+      const fetchNumber = new Promise((resolve, reject) => {
+        setTimeout(() => resolve(1), 1000);
+      });
+      //여기서 1이 전달됨!
+      fetchNumber
+        .then((num) => num * 2) //2
+        .then((num) => num * 3) //6
+        .then((num) => {
+          //6 - 1 = 5
+          return new Promise((resolve, reject) => {
+            setTimeout(() => resolve(num - 1), 1000);
+          });
+        })
+        .then((num) => console.log(num));
+
+      //4. 오류 핸들링 하기
+      //error handing
+      const getHen = () =>
+        new Promise((resolve, reject) => {
+          setTimeout(() => resolve(`👨‍🍳`), 1000);
+        });
+      const getEgg = (hen) =>
+        new Promise((resolve, reject) => {
+          setTimeout(() => reject(new Error(`${hen} => 🥚`)), 1000);
+        });
+
+      const cook = (egg) =>
+        new Promise((resolve, reject) => {
+          setTimeout(() => resolve(`${egg} => 🍳`), 1000);
+        });
+
+      //getHen 함수 호출해서 일단 데이터를 받아옴!
+      //hen -> 닭
+      //egg -> 계란
+      //meal -> 계란후라이
+      getHen()
+        .then((hen) => getEgg(hen))
+        .catch((error) => {
+          return `🍞`;
+        })
+        .then(cook)
+        .then((meal) => console.log(meal))
+        .catch((error) => {
+          console.log(error);
+        });
+      //then(getEgg)
+      //한가지만 받아서 전달하는경우에는 생략이 가능함
+
+      //   getHen().then(getEgg).then(cook).then(console.log).catch(console.log);
+    </script>
+  </body>
+</html>
+
+<!-- 
+
+약속
+-자바스크립트에서 제공,
+비동기를 간편하게 처리할 수 있도록, 
+도와주는 object(오브젝트)
+
+
+1. state(상태)
+-기능 수행이 되는중인지?
+
+2. 원하는 데이터를 제공하는 사람/ 제공된 데이터를 쓰는 사람
+제공자 / 사용자
+
+Promise도 생성자다
+-두 개의 콜백함수를 받음
+resolve와 reject
+
+
+reject
+-중간에 문제가 생기면 호출
+
+
+promise를 만드는 순간
+전달한 함수가 바로 실행
+exeu!!
+네트워크 통신을 할 때 promise 사용
+
+네트워크 요청을 사용자만 했을 경우에는
+어떻게 처리할까?
+->이 점을 유의해서 공부하기
+->불필요한 네트워크 통신
+
+
+에러 핸들링하기?
+-> catch의 콜백함수 이용함 
+
+promise의 then을 호출하게 되면
+promise를 반환하기 때문에,
+catch를 다시 호출할 수 있음
+-> 체이닝
+
+array
+-return된 array를 이용하는 것처럼
+promise에서 then을 이용하면
+promise 반환!
+
+비동기적으로 수행하고 싶은 코드를
+promise 안에다가 집어넣기
+-reject를 고려해, error 처리까지 해줄것
+
+finally
+-무조건 한 번은 실행됨!!
+-에러가 아니더라도!
+
+
+then은 값 또는 promise를 전달할 수 있음!
+새로운 promise을 만들 수 있다는 이야기
+
+암탉으로 달걀을 얻고 -> 에그 프라이까지 만듦
+
+만약에 
+중간에 에러가 발생해서 reject되면?
+-> 에러 핸들링을 해줘야함
+
+달걀을 받아올 때 문제가 생긴다면,
+다른 재료로 대체하고 싶음
+
+
+ -->
